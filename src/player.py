@@ -2,15 +2,21 @@
 # currently.
 
 class Player:
-    def __init__(self, name, skill, room):
+    def __init__(self, name, skill, current_room):
         self.skill = skill
-        self.room = room
+        self.current_room = current_room
     
     def __str__(self):
-        output = f'{self.name} on {self.room.name}'
+        output = f'{self.name} on {self.current_room.name}'
+        ats = dir(self)
+        output += ats
         return output
     
     def setroom(self, room):
-        self.room = room
-        print(f'You are now in {self.room}!\n')
+        self.current_room = room
+        print(f'You are now in {self.current_room}!\n')
+    def look(self):
+        print(f"""{self.current_room.description} """)
+
+    
 
