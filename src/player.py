@@ -25,7 +25,7 @@ class Player:
         print(f'\nYou are now in {self.current_room}!\n')
 
     def look(self):
-        print(f"""{self.current_room.description} """)
+        print(f"""\n{self.current_room.description} """)
         self.current_room.room_inventory()
     
     def look_intoBag(self):
@@ -135,7 +135,7 @@ class Player:
 
                     made_basket = self.check_made_basket(target_dist, throw_distance, 2)
                     if made_basket == True:
-                        print(f'You made the {target_dist}ft putt!')
+                        print(f'\nYou made the {target_dist}ft putt!')
                         throw_data["throw_distance"] = target_dist
                         throw_data["in_basket"] = True
                     else:
@@ -177,11 +177,11 @@ class Player:
                 if made_basket == True:
                     if self.current_hole_shots == 1:
                         print(ace_message())
-                    print(f'WOW! You threw it in from {target_dist}ft !')
+                    print(f'\nWOW! You threw it in from {target_dist}ft !')
                     throw_data["throw_distance"] = target_dist
                     throw_data["in_basket"] = True
                 else:
-                    print(f'You threw the disc {throw_distance}ft!')
+                    print(f'\nYou threw the disc {throw_distance}ft!')
                     dist_to_pin = abs(target_dist - throw_distance)
                     throw_data["throw_distance"] = throw_distance
                     throw_data["throw_accuracy"] = throw_accuracy
@@ -189,7 +189,7 @@ class Player:
 
             return throw_data
         else:
-            print(f"You don't have a {disc} in your hand")
+            print(f"\nYou don't have a {disc} in your hand")
             return None
 
         

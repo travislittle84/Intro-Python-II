@@ -121,7 +121,7 @@ player = Player('Joe Discgolfer', 50, bag, room['parking_lot'])
 # Message Globals
 CANNOT_MOVE_MESSAGE = 'It would not be courteous to the course or other players for you to go this way.'
 COURSE_ACTION_PROMPT = """\nWhat would you like to do?
-[ n: north, e: east, s: south, w: west, p: play hole, q: quit game ]: """
+[ n: north, e: east, s: south, w: west, p: play hole, l: look around, b, check bag, q: quit game ]: """
 HOLE_ACTION_PROMPT = """What disc do you want to throw?
 [ VERB: throw || ITEM: putter stop: stop hole - back to course navigation, q: quit game ]: """
 
@@ -176,7 +176,7 @@ What would you like to do?: """).split()]
                 print('\nYou decide to stop playing this hole.')
                 playing_hole = False
                 break
-            elif verb == 'look':
+            elif verb == 'look' or 'l':
                 print('\nYou take a look around')
                 player.look()
             elif verb == 'score':
@@ -266,7 +266,7 @@ What would you like to do?: """).split()]
     elif verb == 'score':
             print('\nYou check the scorecard...')
             player.check_score()
-    elif verb == 'look':
+    elif verb == 'l':
             print('\nYou take a look around')
             player.look()
     elif verb == 'b':
