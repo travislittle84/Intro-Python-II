@@ -65,9 +65,6 @@ The parking lot is is just to the west""", 100)
 }
 
 
-
-
-
 # Link rooms together
 
 # Parking Lot
@@ -113,18 +110,23 @@ room['hole6'].e_to = room['hole5']
 room['hole6'].w_to = room['parking_lot']
 room['hole6'].s_to = None
 
-# Message Globals
-CANNOT_MOVE_MESSAGE = 'It would not be courteous to the course or other players for you to go this way.'
-COURSE_ACTION_PROMPT = """What would you like to do?
-[ n: north, e: east, s: south, w: west, p: play hole, q: quit game ]: """
-HOLE_ACTION_PROMPT = """What disc do you want to throw?
-[ p: putter, d: driver, mid: midrange || stop: stop hole - back to course navigation, q: quit game ]: """
+
 #
 # Main
 #
 
 # Make a new player object that is currently in the 'outside' (parking_lot) room.
 player = Player('Joe Discgolfer', 50, bag, room['parking_lot'])
+
+# Message Globals
+CANNOT_MOVE_MESSAGE = 'It would not be courteous to the course or other players for you to go this way.'
+COURSE_ACTION_PROMPT = """\nWhat would you like to do?
+[ n: north, e: east, s: south, w: west, p: play hole, q: quit game ]: """
+HOLE_ACTION_PROMPT = """What disc do you want to throw?
+[ VERB: throw || ITEM: putter stop: stop hole - back to course navigation, q: quit game ]: """
+
+HOLE = f"""VERB: throw || Bag:  {player.get_bag_list()}
+VERB: pickups || Ground: {player.current_room.get_room_inventory_list()}"""
 
 # Write a loop that:
 #
@@ -145,49 +147,46 @@ print("""Welcome to pyDiscgolf!\n""")
 if player.current_room.name != 'Parking Lot':
     print(player.current_room)
 else:
-    print(f'Room: {player.current_room.name}\nWhat do you see?:\n{player.current_room.description}')
+    print(f'\nRoom: {player.current_room.name}\nWhat do you see?:\n{player.current_room.description}')
 
 choice = 0
 playing_game = True
 playing_hole = False
-
+num_of_holes = len(room) - 1
+par = num_of_holes * 3
 while playing_game == True:
-    
+    score = player.round_shots - player.holes_completed * 3
     ## HOLE LOOP
     while playing_hole == True:
         current_feet_to_pin = player.current_room.feet
-
         while current_feet_to_pin != 0:
-            print(f"You're {current_feet_to_pin}ft from the pin")
-            player.current_room.room_inventory()
-            choice = [word for word in input(HOLE_ACTION_PROMPT).split()]    
-            
+            print(f"\nYou're {current_feet_to_pin}ft from the pin")
+        
+            choice = [word for word in input(f"""
+VERB: throw  || Bag:  {player.get_bag_list()}
+VERB: pickup || Ground: {player.current_room.get_room_inventory_list()}
+VERB: look: look around || score: check score || stop: stop playing this hole
+
+What would you like to do?: """).split()]    
             verb = choice[0]
             if len(choice) > 1:
                 item = choice[1]
             
             if verb == 'stop':
-                print('\n - You decide to stop playing this hole.')
+                print('\nYou decide to stop playing this hole.')
                 playing_hole = False
                 break
-            elif verb == 'p':
-                print('\n - You bust out your putter and throw it 150ft! Wow it went in too!')
-                current_feet_to_pin = 0
-                playing_hole = False
-            elif verb == 'd':
-                print('\n - You bust out the driver and throw it 350ft! AND IT WENT IN')
-                current_feet_to_pin = 0
-                playing_hole = False
-            elif verb == 'm':
-                print('\n - You bust out the mid range and throw it 250ft! Into the basket!')
-                current_feet_to_pin = 0
-                playing_hole = False
             elif verb == 'look':
-                print('\n - You take a look around')
+                print('\nYou take a look around')
                 player.look()
+            elif verb == 'score':
+                print('\nYou check the scorecard...')
+                player.check_score()
+            elif verb == 'ace': # debug cheat to test ace string
+                print(player.test_ace())
             elif verb == 'throw':
                 if item in player.bag:
-                    print(f'You decide to throw a {item}')
+                    print(f'\nYou decide to throw a {item}')
                     in_hand = player.set_disc_in_hand(item)
                     if in_hand == True:
                         throw_data = player.throw_disc(item, current_feet_to_pin)
@@ -198,11 +197,11 @@ while playing_game == True:
                         player.remove_disc_from_hand(item)
 
                         if throw_data['in_basket'] == True:
-                            print(f'You finished {player.current_room.name}')
-                            player.pickup_item(item)                            
-                            
-                            
-                            print(f'** You scored {player.current_hole_shots} on this hole. Your round score is {player.round_shots} ***')
+                            print(f'\nYou finished {player.current_room.name}')
+                            player.pickup_item(item)
+                            player.round_shots += player.current_hole_shots
+                            player.holes_completed += 1                
+                            player.check_score()
                             playing_hole = False
                             current_feet_to_pin = 0
                             player.current_hole_shots = 0
@@ -210,7 +209,7 @@ while playing_game == True:
                         else:
                             current_feet_to_pin = abs(current_feet_to_pin - throw_data["throw_distance"])
                 else:
-                    print(f'You do not have {item} in your bag to throw')
+                    print(f'\n !- You do not have {item} in your bag to throw')
             elif verb == 'pickup':
                 player.pickup_item(item)
                 # if item in player.current_room.items:
@@ -219,7 +218,7 @@ while playing_game == True:
 
                 
             elif verb == 'q':
-                check_quit = input('Are you sure you want to quit the pyDiscgolf before finishing your round? [ y=yes n=no ]: ' )
+                check_quit = input('\n!- Are you sure you want to quit the pyDiscgolf before finishing your round?\n[ y: yes || n: no ]: ' )
                 if check_quit == 'y':
                     sys.exit() # try this - does it actually exit the program?
                 elif check_quit == 'n':
@@ -227,33 +226,34 @@ while playing_game == True:
 
     ## COURSE LOOP
     # choice = input(COURSE_ACTION_PROMPT)
+   
     choice = [word for word in input(COURSE_ACTION_PROMPT).split()]
-    
+    player.check_score()
     verb = choice[0]
     if len(choice) > 1:
         item = choice[1]
     # choice options
     if verb == 'n':
         if player.current_room.n_to != None:
-            print(f'You move to the north!\n')
+            print(f'\nYou move to the north!\n')
             player.setroom(player.current_room.n_to)
         else:
             print(CANNOT_MOVE_MESSAGE)
     elif verb == 's':
         if player.current_room.s_to != None:
-            print(f'You move to the south!\n')
+            print(f'\nYou move to the south!\n')
             player.setroom(player.current_room.s_to)
         else:
             print(CANNOT_MOVE_MESSAGE)
     elif verb == 'e':
         if player.current_room.e_to != None:
-            print(f'You move to the east!\n')
+            print(f'\nYou move to the east!\n')
             player.setroom(player.current_room.e_to)
         else:
             print(CANNOT_MOVE_MESSAGE)
     elif verb == 'w':
         if player.current_room.w_to != None:
-            print(f'You move to the west!\n')
+            print(f'\nYou move to the west!\n')
             player.setroom(player.current_room.w_to)
         else:
             print(CANNOT_MOVE_MESSAGE)
@@ -261,8 +261,17 @@ while playing_game == True:
         if player.current_room.name == 'Parking Lot':
             print("You probably shouldn't throw a disc in the parking lot")
         else:
-            print('Lets throw a disc!')
+            print('\nLets throw a disc!')
             playing_hole = True
+    elif verb == 'score':
+            print('\nYou check the scorecard...')
+            player.check_score()
+    elif verb == 'look':
+            print('\nYou take a look around')
+            player.look()
+    elif verb == 'b':
+        print(f'\nYou check your bag...')
+        print(player.look_intoBag())
     elif verb == 'q':
         playing_game = False
 

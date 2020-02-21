@@ -1,6 +1,7 @@
 # Write a class to hold player information, e.g. what room they are in
 # currently.
 import random
+from strings import ace_message
 
 class Player:
     def __init__(self, name, skill, bag = {}, current_room = [], disc_in_hand = None):
@@ -11,6 +12,7 @@ class Player:
         self.skill_pct = self.skill / 100
         self.current_hole_shots = 0
         self.round_shots = 0
+        self.holes_completed = 0
     
     def __str__(self):
         output = f'{self.name} on {self.current_room.name}'
@@ -20,32 +22,52 @@ class Player:
     
     def setroom(self, room):
         self.current_room = room
-        print(f'You are now in {self.current_room}!\n')
+        print(f'\nYou are now in {self.current_room}!\n')
 
     def look(self):
         print(f"""{self.current_room.description} """)
+        self.current_room.room_inventory()
     
     def look_intoBag(self):
         for disc in self.bag:
-            print(f'{disc.name}')
+            print(f'{disc}')
+    
+    def get_bag_list(self):
+        list = [item for item in self.bag]
+        return list
+    
+    def get_room_items_list(self):
+        list = [item for item in self.current_room.items]
+        return list
 
+    def check_score(self):
+        score = self.round_shots - self.holes_completed * 3
+        print(f"""
+*--------------------SCORE----------------------*
+|        Shots: {self.round_shots}              
+|        Holes Played: {self.holes_completed}   
+|        Your Score: {score}                    
+*-----------------------------------------------*
+""")
+    def test_ace(self):
+        print(ace_message())
     def set_disc_in_hand(self, disc):
         d = self.bag.get(disc)
         if d != None:
             self.disc_in_hand = d
             self.bag.pop(disc)
-            print(f'You grab a {disc} from your bag...')
+            print(f'\nYou grab a {disc} from your bag...')
             return True
         else:
-            print(f"You don't have a {disc} in your bag.")
+            print(f"\n!- You don't have a {disc} in your bag.")
             return False
     def remove_disc_from_hand(self, disc):
         self.disc_in_hand = None
-        print("Removed disc from hand")
 
     def check_made_basket(self, target_dist, throw_dist, target_size):
         if target_dist - target_size <= throw_dist <= target_dist + target_size:
-            self.round_shots += self.current_hole_shots
+            # self.round_shots += self.current_hole_shots
+            # self.holes_completed += 1
             return True
         else:
             return False
@@ -54,7 +76,7 @@ class Player:
         if item in self.current_room.items:
             self.bag[item] = self.current_room.items[item]
             self.current_room.items.pop(item)
-            print(f'you picked up the {item} and put in your bag.')
+            print(f'\nYou put your {item} in your bag.')
         else:
             print(f'{item} is no where to be found...')
     
@@ -89,7 +111,7 @@ class Player:
                 print(f'50ft or less to pin, going for the putt...')
 
                 if target_dist <= 10:
-                    print(f'Tapped in the putt...')
+                    print(f'\nTapped in the putt...')
                     throw_data["throw_distance"] = target_dist
                     throw_data["in_basket"] = True
                 elif 10 <= target_dist <= 15:
@@ -98,11 +120,11 @@ class Player:
                     
                     made_basket = self.check_made_basket(target_dist, throw_distance, 2)
                     if made_basket == True:
-                        print(f'You made the {target_dist}ft putt!')
+                        print(f'\nYou made the {target_dist}ft putt!')
                         throw_data["throw_distance"] = target_dist
                         throw_data["in_basket"] = True
                     else:
-                        print(f'You missed your {target_dist}ft putt :(')
+                        print(f'\nYou missed your {target_dist}ft putt :(')
                         dist_to_pin = abs(target_dist - throw_distance)
                         throw_data["throw_distance"] = throw_distance
                         throw_data["throw_accuracy"] = throw_accuracy
@@ -117,7 +139,7 @@ class Player:
                         throw_data["throw_distance"] = target_dist
                         throw_data["in_basket"] = True
                     else:
-                        print(f'You missed your {target_dist}ft putt :(')
+                        print(f'\nYou missed your {target_dist}ft putt :(')
                         dist_to_pin = abs(target_dist - throw_distance)
                         throw_data["throw_distance"] = throw_distance
                         throw_data["throw_accuracy"] = throw_accuracy
@@ -128,11 +150,11 @@ class Player:
 
                     made_basket = self.check_made_basket(target_dist, throw_distance, 1)
                     if made_basket == True:
-                        print(f'You made the {target_dist}ft putt!')
+                        print(f'\nYou made the {target_dist}ft putt!')
                         throw_data["throw_distance"] = target_dist
                         throw_data["in_basket"] = True
                     else:
-                        print(f'You missed your {target_dist}ft putt :(')
+                        print(f'\nYou missed your {target_dist}ft putt :(')
                         dist_to_pin = abs(target_dist - throw_distance)
                         throw_data["throw_distance"] = throw_distance
                         throw_data["throw_accuracy"] = throw_accuracy
@@ -153,6 +175,8 @@ class Player:
                 
                 made_basket = self.check_made_basket(target_dist, throw_distance, 1)
                 if made_basket == True:
+                    if self.current_hole_shots == 1:
+                        print(ace_message())
                     print(f'WOW! You threw it in from {target_dist}ft !')
                     throw_data["throw_distance"] = target_dist
                     throw_data["in_basket"] = True
