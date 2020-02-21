@@ -176,7 +176,7 @@ What would you like to do?: """).split()]
                 print('\nYou decide to stop playing this hole.')
                 playing_hole = False
                 break
-            elif verb == 'look' or 'l':
+            elif verb == 'look':
                 print('\nYou take a look around')
                 player.look()
             elif verb == 'score':
