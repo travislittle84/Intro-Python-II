@@ -18,3 +18,7 @@ class Room:
             print('You have no discs on the ground.')
         for item in self.items:
             print(f'You have a {self.items[item].name} on the ground')
+
+    def get_room_inventory_list(self):
+        list = [item for item in self.items]
+        return list
